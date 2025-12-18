@@ -106,30 +106,32 @@ class ParkAgent(CellAgent):
 # 2. MODEL CLASS
 # -------------------------------------------------------------------------
 
-class BoltzmannWealth(Model):
+class ParkingModel(Model):
     """A simple model of an economy where agents exchange currency at random."""
 
     def __init__(self, n=100, width=10, height=10, seed=None, p=5):
         super().__init__(seed=seed)
-        self.num_agents = n
+        self.num_ParkAgent = p
+        self.num_CarAgent = n
+
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
 
         self.datacollector = DataCollector(
             model_reporters={"Gini": self.compute_gini},
-            agent_reporters={"Wealth": "wealth"},
+            agent_reporters={"Wealth": "wealth"}
         )
 
         # Skapa agenter
         CarAgent.create_agents(
             self,
-            self.num_agents,
-            self.random.choices(self.grid.all_cells.cells, k=self.num_agents),
+            self.num_CarAgent,
+            self.random.choices(self.grid.all_cells.cells, k=self.num_CarAgent),
         )
 
         ParkAgent.create_agents(
             self,
-            self.num_agents,
-            self.random.choices(self.grid.all_cells.cells, k=self.num_agents),
+            self.num_ParkAgent,
+            self.random.choices(self.grid.all_cells.cells, k=self.num_ParkAgent),
         )
 
         self.running = True
@@ -142,7 +144,8 @@ class BoltzmannWealth(Model):
     def compute_gini(self):
         agent_wealths = [agent.wealth for agent in self.agents]
         x = sorted(agent_wealths)
-        n = self.num_agents
+        n = self.num_CarAgent
+        p = self.num_ParkAgent
         if n == 0 or sum(x) == 0: return 0
         b = sum(xi * (n - i) for i, xi in enumerate(x)) / (n * sum(x))
         return 1 + (1 / n) - 2 * b
@@ -158,11 +161,9 @@ def agent_portrayal(agent):
         portrayal.update(("color", "tab:blue"), ("size", 100))
     return portrayal
 
-
-
-
-
     # Enklare sätt att bestämma färg och storlek
+
+
 #    return {
 #        "color": "tab:purple" if agent.wealth > 0 else "tab:grey",
 #        "size": 50,
@@ -183,7 +184,7 @@ model_params = {
         "min": 1,
         "max": 10,
         "step": 1,
-    },"p": {
+    }, "p": {
         "type": "SliderInt",
         "value": 50,
         "label": "Number of Parking Agents",
@@ -197,7 +198,7 @@ model_params = {
 }
 
 # 1. Skapa modellen
-model = BoltzmannWealth(50, 10, 10)
+model = ParkingModel(50, 10, 10)
 
 # 2. Skapa graf-komponenter på det "säkra" sättet
 SpaceGraph = make_space_component(agent_portrayal)
