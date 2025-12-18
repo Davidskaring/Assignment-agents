@@ -4,7 +4,7 @@ from mesa import Model
 from mesa.datacollection import DataCollector
 from mesa.discrete_space import CellAgent, OrthogonalMooreGrid
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component
-
+import random
 
 # -------------------------------------------------------------------------
 # 1. AGENT CLASS
@@ -17,8 +17,10 @@ class CarAgent(CellAgent):
         super().__init__(model)
         self.cell = cell
         self.paused = False
-        self.wealth = 1 #?????????????????????????
+        self.wealth = 1
         self.busy = False
+        self.stepcd = 0
+
 
     def move(self):
         self.cell = self.cell.neighborhood.select_random_cell()
@@ -28,13 +30,21 @@ class CarAgent(CellAgent):
 
     def park(self):
         for a in self.cell.agents:
-            if isinstance(a, ParkAgent) and not self.busy:
+            if isinstance(a,ParkAgent) and not self.busy:
                 self.paused = True
                 self.busy = True
+                self.stepcd += random.randint(3, 5)
                 return
+
+    def unpark(self):
+        self.paused = False
 
     def step(self):
         if self.paused:
+            self.stepcd -= 1
+            if self.stepcd == 0:
+                self.unpark()
+                self.busy = False
             return
         self.move()
         self.park()
@@ -64,7 +74,9 @@ class ParkingModel(Model):
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
 
         self.datacollector = DataCollector(
-            model_reporters={"Gini": self.compute_gini},
+            # denna kommer från funktionen nedanför som räknar antal bilar som är parkerade
+            model_reporters={"Occupied Spots": self.count_occupied_spots},
+            # wealth får fungera som en av ovh på knapp för påsatta bilar
             agent_reporters={"Wealth": "wealth"}
         )
 
@@ -88,18 +100,20 @@ class ParkingModel(Model):
         self.agents.shuffle_do("step")
         self.datacollector.collect(self)
 
-    def compute_gini(self):
-        agent_wealths = [agent.wealth for agent in self.agents]
-        x = sorted(agent_wealths)
-        n = self.num_CarAgent
-        p = self.num_ParkAgent
-        if n == 0 or sum(x) == 0: return 0
-        b = sum(xi * (n - i) for i, xi in enumerate(x)) / (n * sum(x))
-        return 1 + (1 / n) - 2 * b
+
+    #nya funktionen för att räkna varje bilagent när den står parkerad i 3-5 steps
+    def count_occupied_spots(self):
+        count = 0
+        # loopa igenom alla agenter
+        for agent in self.agents:
+            # Om det är en bil och den är pausad då har den ju en plats
+            if isinstance(agent, CarAgent) and agent.paused:
+                count += 1
+        return count
 
 
 # -------------------------------------------------------------------------
-# 3. VISUALIZATION (SOLARA) - KORRIGERAD
+# 3. VISUALIZATION (SOLARA)
 # -------------------------------------------------------------------------
 
 def agent_portrayal(agent):
@@ -149,12 +163,14 @@ model = ParkingModel(50, 10, 10)
 
 # 2. Skapa graf-komponenter på det "säkra" sättet
 SpaceGraph = make_space_component(agent_portrayal)
-GiniPlot = make_plot_component("Gini")
+#Denna ändrade jag från Gini skiten till en statsplot istället från occupied slots
+StatsPlot = make_plot_component("Occupied Spots")
 
 # 3. Starta SolaraViz
 page = SolaraViz(
     model,
-    components=[SpaceGraph, GiniPlot],  # Lägg in både kartan och grafen här
+    #Här skickar vi in statsplot till solarawiz
+    components=[SpaceGraph, StatsPlot],  # Lägg in både kartan och grafen här
     model_params=model_params,
     name="Parking Space Agent Program",
 )
