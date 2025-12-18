@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ab0e463c-0609-4863-b753-ff0b94b1c7ae" name="Changes" comment="GUI fix">
-      <change beforePath="$PROJECT_DIR$/Assignment1/Task1.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment1/Task1.py" afterDir="false" />
-    </list>
+    <list default="true" id="ab0e463c-0609-4863-b753-ff0b94b1c7ae" name="Changes" comment="GUI fix" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -42,7 +40,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "patrik"
+    "git-widget-placeholder": "david"
   }
 }]]></component>
   <component name="SharedIndexes">
