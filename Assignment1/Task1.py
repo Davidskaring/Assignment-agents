@@ -3,7 +3,7 @@
 from itertools import count
 
 import numpy as np
-
+import random
 # Data manipulation and analysis.
 import pandas as pd
 
@@ -53,7 +53,7 @@ class CarAgent(CellAgent):
             if isinstance(a,ParkAgent) and not self.busy:
                 self.paused = True
                 self.busy = True
-                self.stepcd += 3
+                self.stepcd += random.randint(3, 5)
                 return
 
     def unpark(self):
