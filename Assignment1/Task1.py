@@ -42,7 +42,9 @@ class BoltzmannWealth(Model):
 
     def __init__(self, n=100, width=10, height=10, seed=None, p=5):
         super().__init__(seed=seed)
-        self.num_agents = n
+        self.num_ParkAgent = p
+        self.num_CarAgent = n
+        
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
 
         self.datacollector = DataCollector(
@@ -51,10 +53,20 @@ class BoltzmannWealth(Model):
         )
 
         # Skapa agenter
+<<<<<<< Updated upstream
         MoneyAgent.create_agents(
+=======
+        CarAgent.create_agents(
             self,
-            self.num_agents,
-            self.random.choices(self.grid.all_cells.cells, k=self.num_agents),
+            self.num_CarAgent,
+            self.random.choices(self.grid.all_cells.cells, k=self.num_CarAgent),
+        )
+
+        ParkAgent.create_agents(
+>>>>>>> Stashed changes
+            self,
+            self.num_ParkAgent,
+            self.random.choices(self.grid.all_cells.cells, k=self.num_ParkAgent),
         )
 
         self.running = True
