@@ -1,4 +1,5 @@
-import mesa
+
+from mesa.visualization.components import AgentPortrayalStyle, make_space_component
 from mesa import Model
 from mesa.datacollection import DataCollector
 from mesa.discrete_space import CellAgent, OrthogonalMooreGrid
@@ -9,53 +10,65 @@ from mesa.visualization import SolaraViz, make_plot_component, make_space_compon
 # 1. AGENT CLASS
 # -------------------------------------------------------------------------
 
-class MoneyAgent(CellAgent):
+class CarAgent(CellAgent):
     """An agent with fixed initial wealth."""
 
     def __init__(self, model, cell):
         super().__init__(model)
         self.cell = cell
-        self.wealth = 1
+        self.paused = False
+        self.wealth = 1 #?????????????????????????
+        self.busy = False
 
     def move(self):
         self.cell = self.cell.neighborhood.select_random_cell()
 
-    def give_money(self):
-        cellmates = [a for a in self.cell.agents if a is not self]
-        if cellmates:
-            other = self.random.choice(cellmates)
-            other.wealth += 1
-            self.wealth -= 1
+    def pause(self):
+        self.paused = True
+
+    def park(self):
+        for a in self.cell.agents:
+            if isinstance(a, ParkAgent) and not self.busy:
+                self.paused = True
+                self.busy = True
+                return
 
     def step(self):
+        if self.paused:
+            return
         self.move()
-        if self.wealth > 0:
-            self.give_money()
+        self.park()
 
+
+class ParkAgent(CellAgent):
+    """An agent with fixed initial wealth."""
+
+    def __init__(self, model, cell):
+        super().__init__(model)
+        self.cell = cell
+        # SET WEALTH ÄNDRAR FÄRGEN BARA ATM
+        self.wealth = 0
 
 # -------------------------------------------------------------------------
 # 2. MODEL CLASS
 # -------------------------------------------------------------------------
 
-class BoltzmannWealth(Model):
+class ParkingModel(Model):
     """A simple model of an economy where agents exchange currency at random."""
 
     def __init__(self, n=100, width=10, height=10, seed=None, p=5):
         super().__init__(seed=seed)
         self.num_ParkAgent = p
         self.num_CarAgent = n
-        
+
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
 
         self.datacollector = DataCollector(
             model_reporters={"Gini": self.compute_gini},
-            agent_reporters={"Wealth": "wealth"},
+            agent_reporters={"Wealth": "wealth"}
         )
 
         # Skapa agenter
-<<<<<<< Updated upstream
-        MoneyAgent.create_agents(
-=======
         CarAgent.create_agents(
             self,
             self.num_CarAgent,
@@ -63,7 +76,6 @@ class BoltzmannWealth(Model):
         )
 
         ParkAgent.create_agents(
->>>>>>> Stashed changes
             self,
             self.num_ParkAgent,
             self.random.choices(self.grid.all_cells.cells, k=self.num_ParkAgent),
@@ -79,7 +91,8 @@ class BoltzmannWealth(Model):
     def compute_gini(self):
         agent_wealths = [agent.wealth for agent in self.agents]
         x = sorted(agent_wealths)
-        n = self.num_agents
+        n = self.num_CarAgent
+        p = self.num_ParkAgent
         if n == 0 or sum(x) == 0: return 0
         b = sum(xi * (n - i) for i, xi in enumerate(x)) / (n * sum(x))
         return 1 + (1 / n) - 2 * b
@@ -90,12 +103,19 @@ class BoltzmannWealth(Model):
 # -------------------------------------------------------------------------
 
 def agent_portrayal(agent):
+    portrayal = AgentPortrayalStyle(size=50, color="tab:orange")
+    if agent.wealth > 0:
+        portrayal.update(("color", "tab:blue"), ("size", 100))
+    return portrayal
+
     # Enklare sätt att bestämma färg och storlek
-    return {
-        "color": "tab:purple" if agent.wealth > 0 else "tab:grey",
-        "size": 50,
-        "alpha": 0.8
-    }
+
+
+#    return {
+#        "color": "tab:purple" if agent.wealth > 0 else "tab:grey",
+#        "size": 50,
+#        "alpha": 0.8
+#   }
 
 
 model_params = {
@@ -108,15 +128,15 @@ model_params = {
         "type": "SliderInt",
         "value": 50,
         "label": "Number of Car Agents:",
-        "min": 10,
-        "max": 100,
+        "min": 1,
+        "max": 10,
         "step": 1,
-    },"p": {
+    }, "p": {
         "type": "SliderInt",
         "value": 50,
         "label": "Number of Parking Agents",
-        "min": 3,
-        "max": 5,
+        "min": 1,
+        "max": 10,
         "step": 1,
     },
 
@@ -125,7 +145,7 @@ model_params = {
 }
 
 # 1. Skapa modellen
-model = BoltzmannWealth(50, 10, 10)
+model = ParkingModel(50, 10, 10)
 
 # 2. Skapa graf-komponenter på det "säkra" sättet
 SpaceGraph = make_space_component(agent_portrayal)
