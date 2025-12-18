@@ -1,5 +1,7 @@
 #Has multi-dimensional arrays and matrices.
 # Has a large collection of mathematical functions to operate on these arrays.
+from itertools import count
+
 import numpy as np
 
 # Data manipulation and analysis.
@@ -18,95 +20,81 @@ from mesa.space import MultiGrid
 
 
 
-def compute_gini(model):
-    agent_wealths = [agent.wealth for agent in model.agents]
-    x = sorted(agent_wealths)
-    N = model.num_agents
-    B = sum(xi * (N - i) for i, xi in enumerate(x)) / (N * sum(x))
-    return 1 + (1 / N) - 2 * B
+import mesa
+from mesa import Model
+from mesa.datacollection import DataCollector
+from mesa.discrete_space import CellAgent, OrthogonalMooreGrid
+from mesa.visualization import SolaraViz, make_plot_component, make_space_component
 
-# CARAGENT FOR MOVING AND FINDING PARKING SPACE
+
+# -------------------------------------------------------------------------
+# 1. AGENT CLASS
+# -------------------------------------------------------------------------
+
 class CarAgent(CellAgent):
     """An agent with fixed initial wealth."""
 
     def __init__(self, model, cell):
-        """initialize a MoneyAgent instance.
-
-        Args:
-            model: A model instance
-        """
         super().__init__(model)
-        self.paused = False
         self.cell = cell
-        self.wealth = 0
+        self.paused = False
+        self.wealth = 1
 
     def move(self):
-        """Move the agent to a random neighboring cell."""
         self.cell = self.cell.neighborhood.select_random_cell()
-        
+
     def pause(self):
         self.paused = True
-    
-    def unpause(self):
-        self.paused = False
-        
-
 
     def park(self):
-        """Give 1 unit of wealth to a random agent in the same cell."""
-        # pausa om en
         cellmates = [a for a in self.cell.agents if a is not self]
-
-        if cellmates:  # Only give money if there are other agents present
-            self.paused = True
+        if cellmates:
+            self.pause()
+            other = self.random.choice(cellmates)
+            other.wealth += 1
+            self.wealth -= 1
 
     def step(self):
-        """do one step of the agent."""
-        if self.paused:
-            return
+        count = 0
         self.move()
+        if self.move():
+            count +=1
 
-        
 
 
 class ParkAgent(CellAgent):
     """An agent with fixed initial wealth."""
 
     def __init__(self, model, cell):
-        """initialize a Parkagent instance.
-
-        Args:
-            model: A model instance
-        """
         super().__init__(model)
         self.cell = cell
+        self.wealth = 1
 
     def move(self):
-        """Move the agent to a random neighboring cell."""
         self.cell = self.cell.neighborhood.select_random_cell()
 
-#    def give_money(self):
-#        """Give 1 unit of wealth to a random agent in the same cell."""
-#        cellmates = [a for a in self.cell.agents if a is not self]
-#
-#        if cellmates:  # Only give money if there are other agents present
-#            other = self.random.choice(cellmates)
-#            other.wealth += 1
-#            self.wealth -= 1
+    def give_money(self):
+        cellmates = [a for a in self.cell.agents if a is not self]
+        if cellmates:
+            other = self.random.choice(cellmates)
+            other.wealth += 1
+            self.wealth -= 1
+
+    def step(self):
+        self.move()
+        if self.wealth > 0:
+            self.give_money()
 
 
+# --
+# -------------------------------------------------------------------------
+# 2. MODEL CLASS
+# -------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-class ParkingModel(mesa.Model):
+class BoltzmannWealth(Model):
     """A simple model of an economy where agents exchange currency at random."""
 
-    def __init__(self, n=100, width=10, height=10, seed=None, p=3):
+    def __init__(self, n=100, width=10, height=10, seed=None, p=5):
         super().__init__(seed=seed)
         self.num_agents = n
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
@@ -122,12 +110,12 @@ class ParkingModel(mesa.Model):
             self.num_agents,
             self.random.choices(self.grid.all_cells.cells, k=self.num_agents),
         )
+
         ParkAgent.create_agents(
             self,
             self.num_agents,
             self.random.choices(self.grid.all_cells.cells, k=self.num_agents),
         )
-
 
         self.running = True
         self.datacollector.collect(self)
@@ -185,7 +173,7 @@ model_params = {
 }
 
 # 1. Skapa modellen
-model = ParkingModel(50, 10, 10, seed=42, p=3)
+model = BoltzmannWealth(50, 10, 10)
 
 # 2. Skapa graf-komponenter på det "säkra" sättet
 SpaceGraph = make_space_component(agent_portrayal)
