@@ -9,10 +9,11 @@ import pandas as pd
 import seaborn as sns
 
 import mesa
-from mesa import space
+from mesa import space, DataCollector
 from mesa.discrete_space import CellAgent, OrthogonalMooreGrid
+from mesa.examples import BoltzmannWealth
 from mesa.visualization import SolaraViz, SpaceRenderer, make_plot_component
-from mesa.visualization.components import AgentPortrayalStyle
+from mesa.visualization.components import AgentPortrayalStyle, make_space_component
 from mesa.space import MultiGrid
 
 
@@ -37,7 +38,7 @@ class CarAgent(CellAgent):
         super().__init__(model)
         self.paused = False
         self.cell = cell
-        self.wealth = 1
+        self.wealth = 0
 
     def move(self):
         """Move the agent to a random neighboring cell."""
@@ -101,35 +102,99 @@ class ParkAgent(CellAgent):
 
 
 
+
 class ParkingModel(mesa.Model):
-    """A model with some number of agents."""
+    """A simple model of an economy where agents exchange currency at random."""
 
-    def __init__(self, n=10, width=10, height=10, seed=None):
-        """Initialize a MoneyModel instance.
-
-        Args:
-            N: The number of agents.
-            width: width of the grid.
-            height: Height of the grid.
-        """
+    def __init__(self, n=100, width=10, height=10, seed=None, p=3):
         super().__init__(seed=seed)
         self.num_agents = n
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
-        # Create agents
+
+        self.datacollector = DataCollector(
+            model_reporters={"Gini": self.compute_gini},
+            agent_reporters={"Wealth": "wealth"},
+        )
+
+        # Skapa agenter
         CarAgent.create_agents(
             self,
             self.num_agents,
             self.random.choices(self.grid.all_cells.cells, k=self.num_agents),
         )
-
-        self.datacollector = mesa.DataCollector(
-            model_reporters={"Gini": compute_gini}, agent_reporters={"Wealth": "wealth"}
+        ParkAgent.create_agents(
+            self,
+            self.num_agents,
+            self.random.choices(self.grid.all_cells.cells, k=self.num_agents),
         )
+
+
+        self.running = True
         self.datacollector.collect(self)
 
-
     def step(self):
-        """do one step of the model"""
         self.agents.shuffle_do("step")
         self.datacollector.collect(self)
 
+    def compute_gini(self):
+        agent_wealths = [agent.wealth for agent in self.agents]
+        x = sorted(agent_wealths)
+        n = self.num_agents
+        if n == 0 or sum(x) == 0: return 0
+        b = sum(xi * (n - i) for i, xi in enumerate(x)) / (n * sum(x))
+        return 1 + (1 / n) - 2 * b
+
+
+# -------------------------------------------------------------------------
+# 3. VISUALIZATION (SOLARA) - KORRIGERAD
+# -------------------------------------------------------------------------
+
+def agent_portrayal(agent):
+    # Enklare sätt att bestämma färg och storlek
+    return {
+        "color": "tab:purple" if agent.wealth > 0 else "tab:grey",
+        "size": 50,
+        "alpha": 0.8
+    }
+
+
+model_params = {
+    "seed": {
+        "type": "InputText",
+        "value": 42,
+        "label": "Random Seed",
+    },
+    "n": {
+        "type": "SliderInt",
+        "value": 50,
+        "label": "Number of Car Agents:",
+        "min": 10,
+        "max": 100,
+        "step": 1,
+    },"p": {
+        "type": "SliderInt",
+        "value": 50,
+        "label": "Number of Parking Agents",
+        "min": 3,
+        "max": 5,
+        "step": 1,
+    },
+
+    "width": 10,
+    "height": 10,
+}
+
+# 1. Skapa modellen
+model = ParkingModel(50, 10, 10, seed=42, p=3)
+
+# 2. Skapa graf-komponenter på det "säkra" sättet
+SpaceGraph = make_space_component(agent_portrayal)
+GiniPlot = make_plot_component("Gini")
+
+# 3. Starta SolaraViz
+page = SolaraViz(
+    model,
+    components=[SpaceGraph, GiniPlot],  # Lägg in både kartan och grafen här
+    model_params=model_params,
+    name="Parking Space Agent Program",
+)
