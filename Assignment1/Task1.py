@@ -40,6 +40,7 @@ class CarAgent(CellAgent):
         self.paused = False
         self.wealth = 1
         self.busy = False
+        self.stepcd = 0
 
     def move(self):
         self.cell = self.cell.neighborhood.select_random_cell()
@@ -52,10 +53,19 @@ class CarAgent(CellAgent):
             if isinstance(a,ParkAgent) and not self.busy:
                 self.paused = True
                 self.busy = True
+                self.stepcd += 3
                 return
+
+    def unpark(self):
+        self.paused = False
+
 
     def step(self):
         if self.paused:
+            self.stepcd -=1
+            if self.stepcd == 0:
+                self.unpark()
+                self.busy = False
             return
         self.move()
         self.park()
