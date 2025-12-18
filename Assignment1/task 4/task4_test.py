@@ -11,7 +11,7 @@ import os
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 headers = {"user-agent": USER_AGENT}
-firebase_url = 'https://console.firebase.google.com/u/0/project/testkivy-b43b1/database/testkivy-b43b1-default-rtdb/data/~2F/.json'
+firebase_url = 'https://testkivy-b43b1-default-rtdb.europe-west1.firebasedatabase.app/.json'
 
 KV = '''
 ScreenManager:
@@ -113,6 +113,8 @@ class WeatherScreen(Screen):
             try:
                 temperature = soup2.find("span", {"class": "wu-unit-temperature"}).find("span", {
                     "class": "wu-value wu-value-to"}).text
+                temperature = (int(temperature)- 32) / 1.8
+                temperature = str(temperature)
                 humidity = soup2.find("span", {"class": "wu-unit-humidity"}).find("span", {
                     "class": "wu-value wu-value-to"}).text
                 pressure = soup2.find("span", {"class": "wu-unit-pressure"}).find("span", {
@@ -166,6 +168,8 @@ class WeatherScreen(Screen):
             requests.post(url=firebase_url, json=data)
         except Exception as e:
             print(f"Firebase error: {e}")
+
+
 
 class MainApp(MDApp):
     def build(self):
