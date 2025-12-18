@@ -39,6 +39,7 @@ class CarAgent(CellAgent):
         self.cell = cell
         self.paused = False
         self.wealth = 1
+        self.busy = False
 
     def move(self):
         self.cell = self.cell.neighborhood.select_random_cell()
@@ -47,18 +48,21 @@ class CarAgent(CellAgent):
         self.paused = True
 
     def park(self):
-        cellmates = [a for a in self.cell.agents if a is not self]
-        if cellmates:
-            self.pause()
-            other = self.random.choice(cellmates)
-            other.wealth += 1
-            self.wealth -= 1
+        for a in self.cell.agents:
+            if isinstance(a,ParkAgent) and not self.busy:
+                self.paused = True
+                self.busy = True
+                return
 
     def step(self):
-        count = 0
+        if self.paused:
+            return
         self.move()
-        if self.move():
-            count +=1
+        self.park()
+#        count = 0
+#        self.move()
+#        if self.move():
+#            count +=1
 
 
 
@@ -68,22 +72,23 @@ class ParkAgent(CellAgent):
     def __init__(self, model, cell):
         super().__init__(model)
         self.cell = cell
-        self.wealth = 1
+        #SET WEALTH ÄNDRAR FÄRGEN BARA ATM
+        self.wealth = 0
 
-    def move(self):
-        self.cell = self.cell.neighborhood.select_random_cell()
+#    def move(self):
+#        self.cell = self.cell.neighborhood.select_random_cell()
 
-    def give_money(self):
-        cellmates = [a for a in self.cell.agents if a is not self]
-        if cellmates:
-            other = self.random.choice(cellmates)
-            other.wealth += 1
-            self.wealth -= 1
+#    def give_money(self):
+#        cellmates = [a for a in self.cell.agents if a is not self]
+#        if cellmates:
+#            other = self.random.choice(cellmates)
+#            other.wealth += 1
+#            self.wealth -= 1
 
-    def step(self):
-        self.move()
-        if self.wealth > 0:
-            self.give_money()
+#    def step(self):
+#        self.move()
+#        if self.wealth > 0:
+#           self.give_money()
 
 
 # --
@@ -138,12 +143,21 @@ class BoltzmannWealth(Model):
 # -------------------------------------------------------------------------
 
 def agent_portrayal(agent):
+    portrayal = AgentPortrayalStyle(size=50, color="tab:orange")
+    if agent.wealth > 0:
+        portrayal.update(("color", "tab:blue"), ("size", 100))
+    return portrayal
+
+
+
+
+
     # Enklare sätt att bestämma färg och storlek
-    return {
-        "color": "tab:purple" if agent.wealth > 0 else "tab:grey",
-        "size": 50,
-        "alpha": 0.8
-    }
+#    return {
+#        "color": "tab:purple" if agent.wealth > 0 else "tab:grey",
+#        "size": 50,
+#        "alpha": 0.8
+#   }
 
 
 model_params = {
@@ -156,15 +170,15 @@ model_params = {
         "type": "SliderInt",
         "value": 50,
         "label": "Number of Car Agents:",
-        "min": 10,
-        "max": 100,
+        "min": 1,
+        "max": 10,
         "step": 1,
     },"p": {
         "type": "SliderInt",
         "value": 50,
         "label": "Number of Parking Agents",
-        "min": 3,
-        "max": 5,
+        "min": 1,
+        "max": 10,
         "step": 1,
     },
 
