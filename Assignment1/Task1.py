@@ -32,8 +32,12 @@ from mesa.visualization import SolaraViz, make_plot_component, make_space_compon
 # -------------------------------------------------------------------------
 
 class CarAgent(CellAgent):
-    """An agent with fixed initial wealth."""
+    """An agent meant to simulate a car looking for parkingspots."""
 
+# this is the constructor for our car agent
+    # we initiate car agent so it inherits from mesas cell agent
+    # we have 5 attributes for this agent were cell is a attribute from their libary
+    # and the rest are our created attributes from us
     def __init__(self, model, cell):
         super().__init__(model)
         self.cell = cell
