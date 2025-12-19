@@ -15,10 +15,19 @@ class WorkerAgent(CellAgent):
 
     def is_worker_available(self):
 
-        if self.my_jobs < self.capacity:
+        if len(self.my_jobs) < self.capacity:
             return True
         else:
             return False
+
+class ParkAgent(CellAgent):
+    """An agent with fixed initial wealth."""
+
+    def __init__(self, model, cell):
+        super().__init__(model)
+        self.cell = cell
+        # SET WEALTH ÄNDRAR FÄRGEN BARA ATM
+        self.wealth = 0
 
 
 # ---------------------------------------------------------
@@ -30,14 +39,26 @@ class Task:
         self.duration = duration
         self.resources = resources  # Hur många agenter krävs?
 
-    def __repr__(self):
-        return f"Uppgift {self.id}: Tid={self.duration}, Kräver={self.resources} pers"
-
-
-
 # 3. MODELLEN
 
+
 class SchedulerModel(Model):
+    def __init__(self, num_agents=3, num_tasks=50):
+        super().__init__()
+        WorkerAgent.create_agents(
+            self.so,
+            num_agents,
+            capacity=2  # Skickas till agentens __init__
+        )
+        self.grid = OrthogonalMooreGrid((5, 10), random=self.random)
+        self.datacollector = DataCollector(
+            # denna kommer från funktionen nedanför som räknar antal bilar som är parkerade
+            model_reporters={"Occupied Spots": self.count_occupied_spots},
+            # wealth får fungera som en av ovh på knapp för påsatta bilar
+            agent_reporters={"Wealth": "wealth"}
+        )
+
+
 
     def step(self):
         # Här kommer logiken för att tilldela tasks till agenter senare
