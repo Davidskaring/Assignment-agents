@@ -43,7 +43,7 @@ ScreenManager:
             padding: "10dp"
             size_hint: 0.9, 0.35
             pos_hint: {"center_x": 0.5, "top": 0.6}
-            elevation: 2
+            elevation: 3
 
             MDLabel:
                 text: f"Temperature: {root.label_temp}"
@@ -110,7 +110,7 @@ class WeatherScreen(Screen):
                 r2 = requests.get(url2, headers=headers)
                 soup2 = BeautifulSoup(r2.content, "html.parser")
                 temperature = soup2.find("span", {"class": "wu-unit-temperature"}).find("span", {
-                    "class": "wu-value wu-value-to"}).text
+                    "class": "wu-value wu-value-to"}).texts
                 temperature = (int(temperature)- 32) / 1.8
                 temperature = str(temperature)
                 humidity = soup2.find("span", {"class": "wu-unit-humidity"}).find("span", {
@@ -125,7 +125,6 @@ class WeatherScreen(Screen):
                 }
             except Exception as e:
                 print(f"Failure, could not find the data on wunderground please enter a new city. {e}")
-                self.status_msg = f"Failure, could not find the data on wunderground please enter a new city. {e}"
 
     def save_to_txt(self, data):
         with open("weather_1.txt", "a", encoding="utf-8") as f:
