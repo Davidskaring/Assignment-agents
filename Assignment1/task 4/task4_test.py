@@ -12,57 +12,130 @@ import os
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 headers = {"user-agent": USER_AGENT}
 firebase_url = 'https://testkivy-b43b1-default-rtdb.europe-west1.firebasedatabase.app/.json'
-
+# https://www.youtube.com/watch?v=cta1yCb3vA8
+# https://jakobtures.github.io/web-scraping/rvest3.html
+# https://www.w3schools.com/python/python_string_formatting.asp
+# https://www.youtube.com/watch?v=1PCWwK0AsE0
+# https://docs.python.org/3/library/sqlite3.html
+# https://www.w3schools.com/python/python_dictionaries_access.asp
+# https://www.geeksforgeeks.org/python/check-if-string-contains-substring-in-python/
+# https://kivymd.readthedocs.io/en/latest/themes/
+# https://kivymd.readthedocs.io/en/latest/components/
 KV = '''
 ScreenManager:
     WeatherScreen:
 
 <WeatherScreen>:
     name: "weather"
+    md_bg_color: [0.1, 0.1, 0.12, 1] 
+
     FloatLayout:
-        MDLabel:
-            text: "Weather Scraper Pro"
-            halign: "center"
-            pos_hint: {"top": 0.95}
-            font_style: "H4"
-
-        MDTextField:
-            id: city_input
-            hint_text: "Write a city (ex. stockholm)"
-            pos_hint: {"center_x": 0.5, "top": 0.8}
-            size_hint_x: 0.8
-
-        MDRaisedButton:
-            text: "Collect and save weather data"
-            pos_hint: {"center_x": 0.5, "top": 0.7}
-            size_hint_x: 0.8
-            on_release: root.get_weather()
 
         MDCard:
             orientation: "vertical"
-            padding: "10dp"
+            padding: "16dp"
+            spacing: "10dp"
             size_hint: 0.9, 0.35
-            pos_hint: {"center_x": 0.5, "top": 0.6}
-            elevation: 3
+            pos_hint: {"center_x": 0.5, "top": 0.60}
+            elevation: 2
+            md_bg_color: [0.15, 0.15, 0.18, 1]
+            radius: [12, 12, 12, 12]
 
-            MDLabel:
-                text: f"Temperature: {root.label_temp}"
-                theme_text_color: "Secondary"}"
-                theme_text_color: "Secondary"
-            MDLabel:
-                text: f"Humidity: {root.label_humidity}"
-                theme_text_color: "Secondary"}"
-                theme_text_color: "Secondary"
-            MDLabel:
-                text: f"Pressure: {root.label_pressure}"
-                theme_text_color: "Secondary"
-            MDLabel:
-                text: f"Visibility: {root.label_visibility}"
-                theme_text_color: "Secondary"
+            MDBoxLayout:
+                orientation: "horizontal"
+                adaptive_height: True
+                MDIcon:
+                    icon: "thermometer"
+                    theme_text_color: "Custom"
+                    text_color: [0.0, 0.6, 0.55, 1]
+                MDLabel:
+                    text: f"Temperature: {root.label_temp}"
+                    theme_text_color: "Custom"
+                    text_color: [0.9, 0.9, 0.9, 1]
+
+            MDBoxLayout:
+                orientation: "horizontal"
+                adaptive_height: True
+                MDIcon:
+                    icon: "water-percent"
+                    theme_text_color: "Custom"
+                    text_color: [0.0, 0.6, 0.55, 1]
+                MDLabel:
+                    text: f"Humidity: {root.label_humidity}"
+                    theme_text_color: "Custom"
+                    text_color: [0.9, 0.9, 0.9, 1]
+
+            MDBoxLayout:
+                orientation: "horizontal"
+                adaptive_height: True
+                MDIcon:
+                    icon: "gauge"
+                    theme_text_color: "Custom"
+                    text_color: [0.0, 0.6, 0.55, 1]
+                MDLabel:
+                    text: f"Pressure: {root.label_pressure}"
+                    theme_text_color: "Custom"
+                    text_color: [0.9, 0.9, 0.9, 1]
+
+            MDBoxLayout:
+                orientation: "horizontal"
+                adaptive_height: True
+                MDIcon:
+                    icon: "eye-outline"
+                    theme_text_color: "Custom"
+                    text_color: [0.0, 0.6, 0.55, 1]
+                MDLabel:
+                    text: f"Visibility: {root.label_visibility}"
+                    theme_text_color: "Custom"
+                    text_color: [0.9, 0.9, 0.9, 1]
+
+            MDSeparator:
+                color: [0.3, 0.3, 0.35, 1]
+
             MDLabel:
                 text: f"Status: {root.status_msg}"
                 theme_text_color: "Hint"
                 font_style: "Caption"
+                halign: "center"
+                text_color: [0.6, 0.6, 0.6, 1]
+
+        # 
+        MDRaisedButton:
+            text: "Collect and save weather data"
+            size_hint_x: 0.8
+            pos_hint: {"center_x": 0.5, "top": 0.70}
+            md_bg_color: [0.0, 0.6, 0.55, 1]
+            text_color: [1, 1, 1, 1]
+            elevation: 2
+            on_release: root.get_weather()
+
+        # 
+        MDTextField:
+            id: city_input
+            hint_text: "Write a city (ex. stockholm)"
+            size_hint_x: 0.8
+            pos_hint: {"center_x": 0.5, "top": 0.82}
+
+            mode: "rectangle"
+            line_color_normal: [1, 1, 1, 1]
+            hint_text_color_normal: [0.7, 0.7, 0.7, 1]
+            line_color_focus: [0.0, 0.6, 0.55, 1]
+            text_color_normal: [1, 1, 1, 1]
+            text_color_focus: [1, 1, 1, 1]
+
+        # 
+        MDLabel:
+            text: "Group 7 Weather Scraper"
+            halign: "center"
+
+            pos_hint: {"top": 0.95, "center_x": 0.5}
+
+            size_hint_y: None
+            height: "50dp"
+            font_style: "H4"
+            theme_text_color: "Custom"
+            text_color: [0.0, 0.6, 0.55, 1] 
+            bold: True
 '''
 
 class WeatherScreen(Screen):
@@ -110,10 +183,10 @@ class WeatherScreen(Screen):
             if "N/A" in visibility:
                 visibility = soup1.find("th", string="Visibility").find_next("td").text
                 # Return successfully scraped data as a dictionary for storage
-                return {
-                    "city": city, "temperature": temperature, "humidity": humidity,
-                    "pressure": pressure, "visibility": visibility
-                }
+            return {
+                "city": city, "temperature": temperature, "humidity": humidity,
+                "pressure": pressure, "visibility": visibility
+            }
         except Exception as e:
             # Log failure for the first source and proceed to the fallback source
             print(f"Failure, could not find the data on time and data. {e}")

@@ -138,3 +138,18 @@ falun
 97
 29.62
 6
+stockholm
+7 °C
+93%
+1008 mbar
+8 km
+stockholm
+7 °C
+93%
+1008 mbar
+6 km
+falun
+6.666666666666666
+97
+29.61
+6
