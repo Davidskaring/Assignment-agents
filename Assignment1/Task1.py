@@ -10,11 +10,7 @@ import pandas as pd
 # Data visualization tools.
 import seaborn as sns
 
-import mesa
-from mesa import space, DataCollector
-from mesa.discrete_space import CellAgent, OrthogonalMooreGrid
-from mesa.examples import BoltzmannWealth
-from mesa.visualization import SolaraViz, SpaceRenderer, make_plot_component
+
 from mesa.visualization.components import AgentPortrayalStyle, make_space_component
 from mesa.space import MultiGrid
 
