@@ -164,34 +164,42 @@ class ParkingModel(Model):
 
 #  VISUALIZATION
 # -------------------------------------------------------------------------
-
+""" Here we create an agent portrayal were we visualize how all the agents will look like.
+ This allows us to instantly see the state of the system just by looking at the colors on the map
+"""
 def agent_portrayal(agent):
     portrayal = AgentPortrayalStyle(size=50, color="tab:orange")
+    #If the agent is "parked", change it to blue
     if agent.wealth > 0:
         portrayal.update(("color", "tab:blue"), ("size", 100))
     return portrayal
 
-
-
+""" Here is all the parameters that we use in Solara to be able to change
+ This dictionary creates the sidebar and sliders on Solara that allow the user to change the settings without rewriting the code
+"""
 model_params = {
+    #Here we create a text box to set random seed
     "seed": {
         "type": "InputText",
         "value": 42,
         "label": "Random Seed",
     },
+    #Here we create a slider for the number of CarAgents we want to use
     "n": {
         "type": "SliderInt",
-        "value": 15,
+        "value": 50,
         "label": "Number of Car Agents:",
         "min": 1,
-        "max": 15,
+        "max": 10,
         "step": 1,
-    }, "p": {
+    },
+    # Here we create a slider for the number of ParkingAgents we want to use
+    "p": {
         "type": "SliderInt",
-        "value": 15,
+        "value": 50,
         "label": "Number of Parking Agents",
         "min": 1,
-        "max": 15,
+        "max": 10,
         "step": 1,
     },
 
@@ -199,19 +207,27 @@ model_params = {
     "height": 10,
 }
 
-# 1. Skapa modellen
+# Here we instansiate the model
 model = ParkingModel()
 
-# 2. Skapa graf-komponenter på det "säkra" sättet
+""" Here we create the Map Component
+ and connects the visualization logic to the grid and
+ send agent_portrayal as an argument to make_space_component
+"""
 SpaceGraph = make_space_component(agent_portrayal)
-#Denna ändrade jag från Gini skiten till en statsplot istället från occupied slots
+""" Here we create the chart component and
+ connects the "Occupied Spots" column from DataCollector to the Y-axis
+ in the Solara app
+"""
 StatsPlot = make_plot_component("Occupied Spots")
 
-# 3. Starta SolaraViz
+""" Here we send in spacegraph and statsplot to the components list.
+    These are the Mesa visualization modules that constitute the actual dashboard 
+    that the user sees and interacts with
+"""
 page = SolaraViz(
     model,
-    #Här skickar vi in statsplot till solarawiz
-    components=[SpaceGraph, StatsPlot],  # Lägg in både kartan och grafen här
+    components=[SpaceGraph, StatsPlot],
     model_params=model_params,
     name="Parking Space Agent Program",
 )
