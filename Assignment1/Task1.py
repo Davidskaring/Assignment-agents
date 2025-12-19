@@ -27,8 +27,8 @@ from mesa.discrete_space import CellAgent, OrthogonalMooreGrid
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component
 
 
-# -------------------------------------------------------------------------
-# 1. AGENT CLASS
+
+# 1. Agent Class Creation
 # -------------------------------------------------------------------------
 
 class CarAgent(CellAgent):
@@ -36,7 +36,7 @@ class CarAgent(CellAgent):
 
 # this is the constructor for our car agent
     # we initiate car agent so it inherits from mesas cell agent
-    # we have 5 attributes for this agent were cell is a attribute from their libary
+    # we have 5 attributes for this agent where cell/welth is a attribute from mesa api
     # and the rest are our created attributes from us
     def __init__(self, model, cell):
         super().__init__(model)
@@ -46,42 +46,57 @@ class CarAgent(CellAgent):
         self.busy = False
         self.stepcd = 0
 
+# here we define our move function
     def move(self):
+        #our agent will move by random to a new cell
         self.cell = self.cell.neighborhood.select_random_cell()
 
+    # here we define our pause function which should simulate parking
     def pause(self):
+        #the function set the value to true and then the caragent will stop moving
         self.paused = True
 
+# here we define our park method
     def park(self):
+        # we use a forloop to look for other agents in the same cell
         for a in self.cell.agents:
+            #if we find a agent and it is a park agent and lastly if its not busy.
+            #busy means if the cell has antoher car agent parked in the cell
+            #the car agent will park and we add a int between 3 and 5 to stepcd(cooldown)
             if isinstance(a,ParkAgent) and not self.busy:
                 self.paused = True
                 self.busy = True
                 self.stepcd += random.randint(3, 5)
                 return
-
+#here we define our unpark function
     def unpark(self):
+        #set the value to false so the parkagent will begin to move again
         self.paused = False
 
-
+# here we define our unpark function
     def step(self):
+        #we use a if statement for all the parked caragents
+        #so every step lower the step cooldown by 1 int
+        # and when the cooldown reach 0 in value the
+        #car agen will unpark and stop being busy
         if self.paused:
             self.stepcd -=1
             if self.stepcd == 0:
                 self.unpark()
                 self.busy = False
             return
+        #we also include this to method in every step
         self.move()
         self.park()
-#        count = 0
-#        self.move()
-#        if self.move():
-#            count +=1
 
 
 
+# this is the constructor for our  Parkagent
+    # we initiate  Parkagent so it inherits from mesas cell agent
+    # we have the attribute wealth in this agent which at the moment only
+    # canches color of the agent in the visualization.
 class ParkAgent(CellAgent):
-    """An agent with fixed initial wealth."""
+    """An agent with fixed spot in the grid."""
 
     def __init__(self, model, cell):
         super().__init__(model)
@@ -89,29 +104,14 @@ class ParkAgent(CellAgent):
         #SET WEALTH ÄNDRAR FÄRGEN BARA ATM
         self.wealth = 0
 
-#    def move(self):
-#        self.cell = self.cell.neighborhood.select_random_cell()
-
-#    def give_money(self):
-#        cellmates = [a for a in self.cell.agents if a is not self]
-#        if cellmates:
-#            other = self.random.choice(cellmates)
-#            other.wealth += 1
-#            self.wealth -= 1
-
-#    def step(self):
-#        self.move()
-#        if self.wealth > 0:
-#           self.give_money()
 
 
-# --
-# -------------------------------------------------------------------------
-# 2. MODEL CLASS
+
+# 2. ParkingModel CLASS
 # -------------------------------------------------------------------------
 
 class ParkingModel(Model):
-    """A simple model of an economy where agents exchange currency at random."""
+    """A simple model of Parking."""
 
     def __init__(self, n=100, width=10, height=10, seed=None, p=5):
         super().__init__(seed=seed)
@@ -121,7 +121,9 @@ class ParkingModel(Model):
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
 
         self.datacollector = DataCollector(
-            model_reporters={"Gini": self.compute_gini},
+            # denna kommer från funktionen nedanför som räknar antal bilar som är parkerade
+            model_reporters={"Occupied Spots": self.count_occupied_spots},
+            # wealth får fungera som en av ovh på knapp för påsatta bilar
             agent_reporters={"Wealth": "wealth"}
         )
 
@@ -138,25 +140,24 @@ class ParkingModel(Model):
             self.random.choices(self.grid.all_cells.cells, k=self.num_ParkAgent),
         )
 
-        self.running = True
-        self.datacollector.collect(self)
 
     def step(self):
         self.agents.shuffle_do("step")
         self.datacollector.collect(self)
 
-    def compute_gini(self):
-        agent_wealths = [agent.wealth for agent in self.agents]
-        x = sorted(agent_wealths)
-        n = self.num_CarAgent
-        p = self.num_ParkAgent
-        if n == 0 or sum(x) == 0: return 0
-        b = sum(xi * (n - i) for i, xi in enumerate(x)) / (n * sum(x))
-        return 1 + (1 / n) - 2 * b
+
+    #nya funktionen för att räkna varje bilagent när den står parkerad i 3-5 steps
+    def count_occupied_spots(self):
+        count = 0
+        # loopa igenom alla agenter
+        for agent in self.agents:
+            # Om det är en bil och den är pausad då har den ju en plats
+            if isinstance(agent, CarAgent) and agent.paused:
+                count += 1
+        return count
 
 
-# -------------------------------------------------------------------------
-# 3. VISUALIZATION (SOLARA) - KORRIGERAD
+#  VISUALIZATION
 # -------------------------------------------------------------------------
 
 def agent_portrayal(agent):
@@ -165,14 +166,6 @@ def agent_portrayal(agent):
         portrayal.update(("color", "tab:blue"), ("size", 100))
     return portrayal
 
-    # Enklare sätt att bestämma färg och storlek
-
-
-#    return {
-#        "color": "tab:purple" if agent.wealth > 0 else "tab:grey",
-#        "size": 50,
-#        "alpha": 0.8
-#   }
 
 
 model_params = {
@@ -183,14 +176,14 @@ model_params = {
     },
     "n": {
         "type": "SliderInt",
-        "value": 50,
+        "value": 15,
         "label": "Number of Car Agents:",
         "min": 1,
-        "max": 10,
+        "max": 15,
         "step": 1,
     }, "p": {
         "type": "SliderInt",
-        "value": 50,
+        "value": 10,
         "label": "Number of Parking Agents",
         "min": 1,
         "max": 10,
@@ -206,12 +199,14 @@ model = ParkingModel(50, 10, 10)
 
 # 2. Skapa graf-komponenter på det "säkra" sättet
 SpaceGraph = make_space_component(agent_portrayal)
-GiniPlot = make_plot_component("Gini")
+#Denna ändrade jag från Gini skiten till en statsplot istället från occupied slots
+StatsPlot = make_plot_component("Occupied Spots")
 
 # 3. Starta SolaraViz
 page = SolaraViz(
     model,
-    components=[SpaceGraph, GiniPlot],  # Lägg in både kartan och grafen här
+    #Här skickar vi in statsplot till solarawiz
+    components=[SpaceGraph, StatsPlot],  # Lägg in både kartan och grafen här
     model_params=model_params,
     name="Parking Space Agent Program",
 )
