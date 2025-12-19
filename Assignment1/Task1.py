@@ -24,7 +24,7 @@ from mesa.visualization import SolaraViz, make_plot_component, make_space_compon
 
 
 
-# 1. Agent Class Creation
+#  Agent Class Creation
 # -------------------------------------------------------------------------
 
 class CarAgent(CellAgent):
@@ -102,7 +102,7 @@ class ParkAgent(CellAgent):
 
 
 
-# 2. ParkingModel CLASS
+#  ParkingModel CLASS
 # -------------------------------------------------------------------------
 
 class ParkingModel(Model):
