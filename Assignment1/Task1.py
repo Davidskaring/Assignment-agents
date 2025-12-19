@@ -1,5 +1,3 @@
-#Has multi-dimensional arrays and matrices.
-# Has a large collection of mathematical functions to operate on these arrays.
 from itertools import count
 
 import numpy as np
@@ -187,19 +185,19 @@ model_params = {
     #Here we create a slider for the number of CarAgents we want to use
     "n": {
         "type": "SliderInt",
-        "value": 50,
+        "value": 15,
         "label": "Number of Car Agents:",
         "min": 1,
-        "max": 10,
+        "max": 15,
         "step": 1,
     },
     # Here we create a slider for the number of ParkingAgents we want to use
     "p": {
         "type": "SliderInt",
-        "value": 50,
+        "value": 15,
         "label": "Number of Parking Agents",
         "min": 1,
-        "max": 10,
+        "max": 15,
         "step": 1,
     },
 
