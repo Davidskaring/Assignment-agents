@@ -69,7 +69,7 @@ class CarAgent(CellAgent):
         #set the value to false so the parkagent will begin to move again
         self.paused = False
 
-# here we define our unpark function
+# here we define our step function
     def step(self):
         #we use a if statement for all the parked caragents
         #so every step lower the step cooldown by 1 int
