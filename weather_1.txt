@@ -13,3 +13,23 @@ stockholm
 93%
 1011 mbar
 11 km
+falun
+6.111111111111111
+99
+29.62
+6
+youtube
+26.11111111111111
+83
+29.9
+10
+stockholm
+7 °C
+93%
+1008 mbar
+6 km
+stockholm
+7 °C
+93%
+1008 mbar
+6 km
