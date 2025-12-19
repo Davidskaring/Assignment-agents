@@ -28,12 +28,12 @@ ScreenManager:
 
         MDTextField:
             id: city_input
-            hint_text: "Ange stad (t.ex. falun)"
+            hint_text: "Write a city (ex. stockholm)"
             pos_hint: {"center_x": 0.5, "top": 0.8}
             size_hint_x: 0.8
 
         MDRaisedButton:
-            text: "Hämta och Spara Väder"
+            text: "Collect and save weather data"
             pos_hint: {"center_x": 0.5, "top": 0.7}
             size_hint_x: 0.8
             on_release: root.get_weather()
@@ -46,18 +46,18 @@ ScreenManager:
             elevation: 2
 
             MDLabel:
-                text: f"Temperatur: {root.label_temp}"
+                text: f"Temperature: {root.label_temp}"
                 theme_text_color: "Secondary"}"
                 theme_text_color: "Secondary"
             MDLabel:
-                text: f"Luftfuktighet: {root.label_humidity}"
+                text: f"Humidity: {root.label_humidity}"
                 theme_text_color: "Secondary"}"
                 theme_text_color: "Secondary"
             MDLabel:
-                text: f"Tryck: {root.label_pressure}"
+                text: f"Pressure: {root.label_pressure}"
                 theme_text_color: "Secondary"
             MDLabel:
-                text: f"Sikt: {root.label_visibility}"
+                text: f"Visibility: {root.label_visibility}"
                 theme_text_color: "Secondary"
             MDLabel:
                 text: f"Status: {root.status_msg}"
@@ -91,13 +91,9 @@ class WeatherScreen(Screen):
         url1 = f"https://www.timeanddate.com/weather/sweden/{city}"
         url2 = f"https://www.wunderground.com/weather/se/{city}"
 
-        r1 = requests.get(url1, headers=headers)
-        r2 = requests.get(url2, headers=headers)
-
-        soup1 = BeautifulSoup(r1.content, "html.parser")
-        soup2 = BeautifulSoup(r2.content, "html.parser")
-
         try:
+            r1 = requests.get(url1, headers=headers)
+            soup1 = BeautifulSoup(r1.content, "html.parser")
             temperature = soup1.find("div", {"id": "qlook"}).find_next("div", {"class": "h2"}).text
             humidity = soup1.find("th", string="Humidity: ").find_next("td").text
             pressure = soup1.find("th", string="Pressure: ").find_next("td").text
@@ -111,6 +107,8 @@ class WeatherScreen(Screen):
         except Exception as e:
             print(f"Failure, could not find the data on time and data. {e}")
             try:
+                r2 = requests.get(url2, headers=headers)
+                soup2 = BeautifulSoup(r2.content, "html.parser")
                 temperature = soup2.find("span", {"class": "wu-unit-temperature"}).find("span", {
                     "class": "wu-value wu-value-to"}).text
                 temperature = (int(temperature)- 32) / 1.8
@@ -127,6 +125,7 @@ class WeatherScreen(Screen):
                 }
             except Exception as e:
                 print(f"Failure, could not find the data on wunderground please enter a new city. {e}")
+                self.status_msg = f"Failure, could not find the data on wunderground please enter a new city. {e}"
 
     def save_to_txt(self, data):
         with open("weather_1.txt", "a", encoding="utf-8") as f:
