@@ -34,9 +34,9 @@ from mesa.visualization import SolaraViz, make_plot_component, make_space_compon
 class CarAgent(CellAgent):
     """An agent meant to simulate a car looking for parkingspots."""
 
-# this is the constructor for our car agent
+# constructor for our car agent
     # we initiate car agent so it inherits from mesas cell agent
-    # we have 5 attributes for this agent where cell/welth is a attribute from mesa api
+    # we have 5 attributes for this agent where cell is mesa related attribute
     # and the rest are our created attributes from us
     def __init__(self, model, cell):
         super().__init__(model)
@@ -113,27 +113,32 @@ class ParkAgent(CellAgent):
 class ParkingModel(Model):
     """A simple model of Parking."""
 
-    def __init__(self, n=100, width=10, height=10, seed=None, p=5):
+# constructour for our parking model
+    # we initiate the model with number of Caragents, width and height of the grid
+    # and seed if we wanna reproduce a test
+    #and lastly number of Parkagents
+    def __init__(self, n=15, width=10, height=10, seed=None, p=15):
         super().__init__(seed=seed)
-        self.num_ParkAgent = p
         self.num_CarAgent = n
+        self.num_ParkAgent = p
 
+
+        #here we create our 2d-grid useing the mooore grid from mesa
         self.grid = OrthogonalMooreGrid((width, height), random=self.random)
 
+        #we use data collecter to collect model and agent statistics
         self.datacollector = DataCollector(
-            # denna kommer från funktionen nedanför som räknar antal bilar som är parkerade
-            model_reporters={"Occupied Spots": self.count_occupied_spots},
-            # wealth får fungera som en av ovh på knapp för påsatta bilar
-            agent_reporters={"Wealth": "wealth"}
+            # this model reporter counts how many parking spots are occupied at the moment
+            model_reporters={"Occupied Spots": self.count_occupied_spots}
         )
 
-        # Skapa agenter
+        # here we create Caragent instances and place them randomly on the grid.
         CarAgent.create_agents(
             self,
             self.num_CarAgent,
             self.random.choices(self.grid.all_cells.cells, k=self.num_CarAgent),
         )
-
+        # here we create Parkagent instances and place them randomly on the grid.
         ParkAgent.create_agents(
             self,
             self.num_ParkAgent,
@@ -142,16 +147,21 @@ class ParkingModel(Model):
 
 
     def step(self):
+        #here is were we exectue the step in the "simulation
+        #we use shuffle_do so all the agents perform the step method in a random order
+        #this is to prevent ordering favor
         self.agents.shuffle_do("step")
+        #datacollector so we collect data after each step
         self.datacollector.collect(self)
 
 
     #nya funktionen för att räkna varje bilagent när den står parkerad i 3-5 steps
+    #here we the fucntion for counting the number of Caragents currently parked
     def count_occupied_spots(self):
         count = 0
-        # loopa igenom alla agenter
+        #we loop thorugh all the agents
         for agent in self.agents:
-            # Om det är en bil och den är pausad då har den ju en plats
+            # if there is a agent, CarAgent and it is paused we add one the the count
             if isinstance(agent, CarAgent) and agent.paused:
                 count += 1
         return count
@@ -183,10 +193,10 @@ model_params = {
         "step": 1,
     }, "p": {
         "type": "SliderInt",
-        "value": 10,
+        "value": 15,
         "label": "Number of Parking Agents",
         "min": 1,
-        "max": 10,
+        "max": 15,
         "step": 1,
     },
 
@@ -195,7 +205,7 @@ model_params = {
 }
 
 # 1. Skapa modellen
-model = ParkingModel(50, 10, 10)
+model = ParkingModel()
 
 # 2. Skapa graf-komponenter på det "säkra" sättet
 SpaceGraph = make_space_component(agent_portrayal)
