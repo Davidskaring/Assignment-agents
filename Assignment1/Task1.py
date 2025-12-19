@@ -92,9 +92,11 @@ class ParkingModel(Model):
             self.num_ParkAgent,
             self.random.choices(self.grid.all_cells.cells, k=self.num_ParkAgent),
         )
+        #Eftersom Super_init_seed ärver från föräldra klassen Model så behövs inte det där kodraden
+        #den är då egentligen osynlig nu men eftersom man ärver egenskaper från mesa Model från Super() så är den alltid true
+        #self.running = True
 
-        self.running = True
-        self.datacollector.collect(self)
+        #self.datacollector.collect(self)
 
     def step(self):
         self.agents.shuffle_do("step")
