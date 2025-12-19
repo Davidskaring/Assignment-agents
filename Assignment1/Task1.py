@@ -94,14 +94,13 @@ class CarAgent(CellAgent):
 # this is the constructor for our  Parkagent
     # we initiate  Parkagent so it inherits from mesas cell agent
     # we have the attribute wealth in this agent which at the moment only
-    # canches color of the agent in the visualization.
+    # changes color of the agent in the visualization.
 class ParkAgent(CellAgent):
     """An agent with fixed spot in the grid."""
 
     def __init__(self, model, cell):
         super().__init__(model)
         self.cell = cell
-        #SET WEALTH ÄNDRAR FÄRGEN BARA ATM
         self.wealth = 0
 
 
