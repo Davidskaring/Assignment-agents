@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ab0e463c-0609-4863-b753-ff0b94b1c7ae" name="Changes" comment="GUI fix" />
+    <list default="true" id="ab0e463c-0609-4863-b753-ff0b94b1c7ae" name="Changes" comment="task1 och task 2">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,21 +15,21 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "patrikpeterson69"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;patrikpeterson69&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Davidskaring/Assignment-agents.git",
-    "accountId": "4ab4455f-1d15-4e58-914f-9ac55c70f474"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Davidskaring/Assignment-agents.git&quot;,
+    &quot;accountId&quot;: &quot;4ab4455f-1d15-4e58-914f-9ac55c70f474&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="370jhI7FXYZw0XybpLaf0GjVhzw" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -37,10 +39,11 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.Task1.executor": "Run",
+    "Python.Task2.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "david"
+    "git-widget-placeholder": "patrik"
   }
 }]]></component>
   <component name="SharedIndexes">
@@ -65,11 +68,57 @@
       <option name="presentableId" value="LOCAL−00001" />
       <updated>1766051519526</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL−00002" summary="GUI fix">
+      <option name="closed" value="true" />
+      <created>1766072557334</created>
+      <option name="number" value="LOCAL−00002" />
+      <option name="presentableId" value="LOCAL−00002" />
+      <updated>1766072557334</updated>
+    </task>
+    <task id="LOCAL−00003" summary="ny funktion count_occupied_spots och tog bort GINI och ersatta med Occopied Slots">
+      <option name="closed" value="true" />
+      <created>1766075327122</created>
+      <option name="number" value="LOCAL−00003" />
+      <option name="presentableId" value="LOCAL−00003" />
+      <updated>1766075327122</updated>
+    </task>
+    <task id="LOCAL−00004" summary="Påbörjat Task2 punkt 1">
+      <option name="closed" value="true" />
+      <created>1766096216490</created>
+      <option name="number" value="LOCAL−00004" />
+      <option name="presentableId" value="LOCAL−00004" />
+      <updated>1766096216490</updated>
+    </task>
+    <task id="LOCAL−00005" summary="fix">
+      <option name="closed" value="true" />
+      <created>1766134738016</created>
+      <option name="number" value="LOCAL−00005" />
+      <option name="presentableId" value="LOCAL−00005" />
+      <updated>1766134738016</updated>
+    </task>
+    <task id="LOCAL−00006" summary="task1 och task 2">
+      <option name="closed" value="true" />
+      <created>1766143117820</created>
+      <option name="number" value="LOCAL−00006" />
+      <option name="presentableId" value="LOCAL−00006" />
+      <updated>1766143117820</updated>
+    </task>
+    <task id="LOCAL−00007" summary="task1 och task 2">
+      <option name="closed" value="true" />
+      <created>1766144906174</created>
+      <option name="number" value="LOCAL−00007" />
+      <option name="presentableId" value="LOCAL−00007" />
+      <updated>1766144906174</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="GUI fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="GUI fix" />
+    <MESSAGE value="ny funktion count_occupied_spots och tog bort GINI och ersatta med Occopied Slots" />
+    <MESSAGE value="Påbörjat Task2 punkt 1" />
+    <MESSAGE value="fix" />
+    <MESSAGE value="task1 och task 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="task1 och task 2" />
   </component>
 </project>
