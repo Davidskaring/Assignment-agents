@@ -77,7 +77,7 @@ class TaskModel(Model):
 
         # Datacollector
         self.datacollector = DataCollector(
-            # here we use model:reporters and use the function get_queue_length to be able to display queue length in solara
+            # here we use model_reporters and use the function get_queue_length to be able to display queue length in solara
             model_reporters={"Tasks in Queue": self.get_queue_length}
         )
         self.datacollector.collect(self)
@@ -141,22 +141,26 @@ class TaskModel(Model):
 
 
 # -------------------------------------------------------------------------
-# 4. VISUALIZATION CONFIGURATION
+# 4. VISUALIZATION
 # -------------------------------------------------------------------------
 def agent_portrayal(agent):
     """
     Visualizes cooperation by assigning colors based on Task ID.
     """
-    portrayal = AgentPortrayalStyle(size=50, color="lightgrey")
+    #If the agent is idle (waiting) set the color grey
+    portrayal = AgentPortrayalStyle(size=80, color="lightgrey")
 
-    # If the agent is working, color it based on the Task ID
+    # If the agent is working then:
     if len(agent.jobs) > 0:
         current_task = agent.jobs[0]
 
-        # List of colors to cycle through
-        colors = ["red", "green", "blue", "orange", "purple", "cyan"]
-        # Use modulo operator to assign a color from the list based on ID
-        color = colors[current_task.id % len(colors)]
+        # Check how many agents the task requires
+        if current_task.resources > 1:
+            # if the task requires more than 1 agent, turn it red
+            color = "red"
+        else:
+            # if the task requires one agent, turn it blue
+            color = "blue"
 
         portrayal.update(("color", color))
 
