@@ -1,120 +1,183 @@
+from asyncio import Task
+from itertools import count
+from symtable import Class
+
+import numpy as np
 import random
-from mesa import Model, DataCollector
-from mesa.agent import AgentSet
+# Data manipulation and analysis.
+import pandas as pd
+
+# Data visualization tools.
+import seaborn as sns
+
+
+from mesa.visualization.components import AgentPortrayalStyle, make_space_component
+from mesa.space import MultiGrid
+
+
+
+import mesa
+from mesa import Model
+from mesa.datacollection import DataCollector
 from mesa.discrete_space import CellAgent, OrthogonalMooreGrid
-from numpy.ma.core import append
+from mesa.visualization import SolaraViz, make_plot_component, make_space_component
+from tornado.process import task_id
 
 
-# ---------------------------------------------------------
-# 1. AGENTEN
-# ---------------------------------------------------------
-class WorkerAgent1(CellAgent):
-    def __init__(self, model, cell, capacity=2):
+#  Agent Class Creation
+# -------------------------------------------------------------------------
+
+
+class Agentworker(CellAgent):
+    """An agent meant to simulate a car looking for parkingspots."""
+
+    def __init__(self, model, cell):
         super().__init__(model)
         self.cell = cell
-        self.capacity = capacity
-        self.my_jobs = []  # Lista för att hålla tasks
-        self.busy = False
-        self.stepcd = 0
+        self.capacity = random.randint(1, 2)
 
-    def working(self):
-
-        for a in self.cell.agents:
-            if isinstance(a, TaskAgent) and not self.busy:
-                self.stepcd += self.duration
-
-
-    def is_worker_available(self):
-
-        if len(self.my_jobs) < self.capacity:
-            return True
-        else:
-            return False
-
-
-class WorkerAgent2(CellAgent):
-    def __init__(self, model, cell, capacity=1):
-        super().__init__(model)
-        self.cell = cell
-        self.capacity = capacity
-        self.my_jobs = []  # Lista för att hålla tasks
-
-
-class WorkerAgent3(CellAgent):
-    def __init__(self, model, cell, capacity=2):
-        super().__init__(model)
-        self.cell = cell
-        self.capacity = capacity
-        self.my_jobs = []  # Lista för att hålla tasks
 
 
 
 class TaskAgent(CellAgent):
-    """An agent with fixed initial wealth."""
+    """An agent with fixed spot in the grid."""
 
-    def __init__(self, model, cell, id, duration, resources, task, tasklist):
+    def __init__(self, model, cell, taskid):
         super().__init__(model)
         self.cell = cell
-        self.id = id
-        self.duration = random.randint(10,20)
+        self.taskid = taskid
+        self.duration = random.randint(5, 20)
         self.resources = random.randint(1, 3)
-        self.task = 50
-        self.tasklist = []
-
-    def taskcreate(self):
-
-        for n in range (self.task):
-            tasks = self.duration , self.resources , self.id
-            self.tasklist.append(tasks)
+        self.cooldown = self.duration
 
 
 
+#  ParkingModel CLASS
+# -------------------------------------------------------------------------
 
-# 3. MODELLEN
+class ParkingModel(Model):
+    """A simple model of Parking."""
+
+# constructour for our parking model
+    # we initiate the model with number of Caragents, width and height of the grid
+    # and seed if we wanna reproduce a test
+    #and lastly number of Parkagents
+    def __init__(self, n=15, width=10, height=10, seed=None, p=15):
+        super().__init__(seed=seed)
+        self.num_CarAgent = n
+        self.num_ParkAgent = p
 
 
-class SchedulerModel(Model):
-    def __init__(self, t=1, num_tasks=50):
-        super().__init__()
-        self.num_WrokerAgent1 = t
-        self.num_WrokerAgent2 = t
-        self.num_WrokerAgent3 = t
-        self.num_TaskAgents = num_tasks
+        #here we create our 2d-grid useing the mooore grid from mesa
+        self.grid = OrthogonalMooreGrid((width, height), random=self.random)
 
-
-
-        WorkerAgent1.create_agents(
-            self,
-            self.num_WrokerAgent1,
-      # Skickas till agentens __init__
-        )
-
-        WorkerAgent2.create_agents(
-            self,
-            self.num_WrokerAgent2,
-            # Skickas till agentens __init__
-        )
-
-        WorkerAgent3.create_agents(
-            self,
-            self.num_WrokerAgent3,
-            # Skickas till agentens __init__
-        )
-
-        TaskAgent.create_agents(
-            self.sort(self),
-            self.num_TaskAgents,
-
-        )
-        self.grid = OrthogonalMooreGrid((5, 10), random=self.random)
+        #we use data collecter to collect model and agent statistics
         self.datacollector = DataCollector(
-            # denna kommer från funktionen nedanför som räknar antal bilar som är parkerade
-            model_reporters={"Occupied Spots": self.count_occupied_spots},
-            # wealth får fungera som en av ovh på knapp för påsatta bilar
-            agent_reporters={"Wealth": "wealth"}
+            # this model reporter counts how many parking spots are occupied at the moment
+            model_reporters={"Occupied Spots": self.count_occupied_spots}
         )
 
+        # here we create Caragent instances and place them randomly on the grid.
+        CarAgent.create_agents(
+            self,
+            self.num_CarAgent,
+            self.random.choices(self.grid.all_cells.cells, k=self.num_CarAgent),
+        )
+        # here we create Parkagent instances and place them randomly on the grid.
+        ParkAgent.create_agents(
+            self,
+            self.num_ParkAgent,
+            self.random.choices(self.grid.all_cells.cells, k=self.num_ParkAgent),
+        )
 
 
     def step(self):
-        # Här kommer logiken för att tilldela tasks till agenter senare
+        #here is were we exectue the step in the "simulation
+        #we use shuffle_do so all the agents perform the step method in a random order
+        #this is to prevent ordering favor
+        self.agents.shuffle_do("step")
+        #datacollector so we collect data after each step
+        self.datacollector.collect(self)
+
+
+    #nya funktionen för att räkna varje bilagent när den står parkerad i 3-5 steps
+    #here we the fucntion for counting the number of Caragents currently parked
+    def count_occupied_spots(self):
+        count = 0
+        #we loop thorugh all the agents
+        for agent in self.agents:
+            # if there is a agent, CarAgent and it is paused we add one the the count
+            if isinstance(agent, CarAgent) and agent.paused:
+                count += 1
+        return count
+
+
+#  VISUALIZATION
+# -------------------------------------------------------------------------
+""" Here we create an agent portrayal were we visualize how all the agents will look like.
+ This allows us to instantly see the state of the system just by looking at the colors on the map
+"""
+def agent_portrayal(agent):
+    portrayal = AgentPortrayalStyle(size=50, color="tab:orange")
+    #If the agent is "parked", change it to blue
+    if agent.wealth > 0:
+        portrayal.update(("color", "tab:blue"), ("size", 100))
+    return portrayal
+
+""" Here is all the parameters that we use in Solara to be able to change
+ This dictionary creates the sidebar and sliders on Solara that allow the user to change the settings without rewriting the code
+"""
+model_params = {
+    #Here we create a text box to set random seed
+    "seed": {
+        "type": "InputText",
+        "value": 42,
+        "label": "Random Seed",
+    },
+    #Here we create a slider for the number of CarAgents we want to use
+    "n": {
+        "type": "SliderInt",
+        "value": 15,
+        "label": "Number of Car Agents:",
+        "min": 1,
+        "max": 15,
+        "step": 1,
+    },
+    # Here we create a slider for the number of ParkingAgents we want to use
+    "p": {
+        "type": "SliderInt",
+        "value": 15,
+        "label": "Number of Parking Agents",
+        "min": 1,
+        "max": 15,
+        "step": 1,
+    },
+
+    "width": 10,
+    "height": 10,
+}
+
+# Here we instansiate the model
+model = ParkingModel()
+
+""" Here we create the Map Component
+ and connects the visualization logic to the grid and
+ send agent_portrayal as an argument to make_space_component
+"""
+SpaceGraph = make_space_component(agent_portrayal)
+""" Here we create the chart component and
+ connects the "Occupied Spots" column from DataCollector to the Y-axis
+ in the Solara app
+"""
+StatsPlot = make_plot_component("Occupied Spots")
+
+""" Here we send in spacegraph and statsplot to the components list.
+    These are the Mesa visualization modules that constitute the actual dashboard 
+    that the user sees and interacts with
+"""
+page = SolaraViz(
+    model,
+    components=[SpaceGraph, StatsPlot],
+    model_params=model_params,
+    name="Parking Space Agent Program",
+)
