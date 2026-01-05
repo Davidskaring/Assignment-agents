@@ -24,7 +24,7 @@ class Task:
 # -------------------------------------------------------------------------
 # 2. AGENT CLASS
 # -------------------------------------------------------------------------
-class WorkerAgent(CellAgent):
+class Workeragent(CellAgent):
     """
     Represents a worker agent that can handle multiple tasks
     """
@@ -61,7 +61,7 @@ class TaskModel(Model):
             cap = random.randint(1, 2)
 
             #Create and add the agent
-            a = WorkerAgent(self, cell, capacity=cap)
+            a = Workeragent(self, cell, capacity=cap)
             cell.add_agent(a)
             self.agents_list.append(a)
             self.agents.add(a)
